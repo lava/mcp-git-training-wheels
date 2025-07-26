@@ -116,7 +116,7 @@ def git_commit(files: List[str], message: str) -> str:
 
 
 @mcp.tool()
-def fixup_commit(files: List[str]) -> str:
+def git_commit_amend(files: List[str]) -> str:
     """
     Amend files to the last commit created by git_commit.
     If the commit is still HEAD, uses git commit --amend.
