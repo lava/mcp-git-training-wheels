@@ -147,13 +147,13 @@ def fixup_commit(files: List[str]) -> str:
             except subprocess.CalledProcessError:
                 # Hash not found, try to find by message
                 log_result = run_git_command_with_retry(
-                    ["git", "log", "--oneline", "--grep", f"^{saved_message}$"]
+                    ["git", "log", "--format=%H", "--grep", f"^{saved_message}$"]
                 )
                 if not log_result.stdout.strip():
                     return f"Error: Could not find commit with hash {saved_hash} or message '{saved_message}'"
                 
-                # Get the first matching commit
-                target_commit = log_result.stdout.strip().split()[0]
+                # Get the first matching commit hash
+                target_commit = log_result.stdout.strip().split('\n')[0]
             
             # Create a fixup commit
             result = run_git_command_with_retry(["git", "commit", "--fixup", target_commit])
