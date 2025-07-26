@@ -32,7 +32,7 @@ def run_git_command_with_retry(cmd: List[str], check: bool = True) -> subprocess
         subprocess.CalledProcessError: If command fails after all retries
     """
     backoff = INITIAL_BACKOFF
-    last_error = None
+    last_error: Exception
     
     for attempt in range(MAX_RETRIES):
         try:
