@@ -150,7 +150,9 @@ def fixup_commit(files: List[str]) -> str:
                     return f"Error: Empty commit message, cannot search for commit {saved_hash}"
                 
                 # Build git log command with --grep for each line
-                git_cmd = ["git", "log", "--format=%H", "--all-match"] + [item for line in message_lines for item in ["--grep", line]]
+                git_cmd = ["git", "log", "--format=%H", "--all-match"]
+                for line in message_lines:
+                    git_cmd.extend(["--grep", line])
                 
                 log_result = run_git_command_with_retry(git_cmd)
                 if not log_result.stdout.strip():
