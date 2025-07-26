@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
-    {name = "Benno Evers", email = "benno@localhost"}
+    {name = "Benno Evers", email = "benno.martin.evers@gmail.com"}
 ]
 keywords = ["mcp", "git", "model-context-protocol"]
 classifiers = [
@@ -49,9 +49,11 @@ packages = ["src/git_training_wheels"]
 
 [tool.uv]
 dev-dependencies = [
+    "build>=1.2.2.post1",
     "pytest>=7.0.0",
     "pytest-asyncio>=0.21.0",
     "ruff>=0.1.0",
+    "twine>=6.1.0",
 ]
 
 [tool.ruff]
