@@ -119,7 +119,6 @@ def fixup_commit(files: List[str]) -> str:
         Result of the fixup operation
     """
     try:
-        # Check if we have a saved commit
         global last_commit_info
         if not last_commit_info:
             return "Error: No previous commit found. Use git_commit first."
@@ -127,7 +126,6 @@ def fixup_commit(files: List[str]) -> str:
         saved_hash = last_commit_info.hash
         saved_message = last_commit_info.message
         
-        # Get current HEAD hash
         head_result = run_git_command_with_retry(["git", "rev-parse", "HEAD"])
         head_hash = head_result.stdout.strip()
         
@@ -158,7 +156,6 @@ def fixup_commit(files: List[str]) -> str:
                 if not log_result.stdout.strip():
                     return f"Error: Could not find commit with hash {saved_hash} or message '{saved_message}'"
                 
-                # Get the first matching commit hash
                 target_commit = log_result.stdout.strip().split('\n')[0]
             
             # Create a fixup commit
