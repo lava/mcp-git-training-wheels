@@ -2,12 +2,12 @@
 
 LLMs try to please, but as the context window gets larger and larger, errors
 start to happen. In particular, current models have a tendency to just
-`git add -a` the whole source tree, accidentally pulling in the whole source
-tree.
+`git add -a` the whole source tree, accidentally adding lots of random stuff
+to their commits.
 
 These issues become especially noticable when multiple agents are working on
-a codebase in parallel. And no current model has the ability to un-fuck a
-git history.
+a codebase in parallel, or if you're doing quick fixes while an agent is working.
+And no current model has the ability to un-fuck a git history.
 
 This MCP server gives the agent some training wheels for using git safely,. It
 ensures that only a specific named set of files can be committed, and also
