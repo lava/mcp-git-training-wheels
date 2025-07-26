@@ -1,12 +1,12 @@
 [project]
 name = "mcp-git-training-wheels"
 version = "0.1.0"
-description = "MCP server providing Git commit and fixup tools with retry logic"
+description = "MCP server providing a safer 'git commit' alternative"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
-    {name = "Your Name", email = "your.email@example.com"}
+    {name = "Benno Evers", email = "benno@localhost"}
 ]
 keywords = ["mcp", "git", "model-context-protocol"]
 classifiers = [
