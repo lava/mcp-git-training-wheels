@@ -146,9 +146,15 @@ def fixup_commit(files: List[str]) -> str:
                 target_commit = saved_hash
             except subprocess.CalledProcessError:
                 # Hash not found, try to find by message
-                log_result = run_git_command_with_retry(
-                    ["git", "log", "--format=%H", "--grep", f"^{saved_message}$"]
-                )
+                # Split message into lines and grep each line with --all-match
+                message_lines = [line.strip() for line in saved_message.split('\n') if line.strip()]
+                if not message_lines:
+                    return f"Error: Empty commit message, cannot search for commit {saved_hash}"
+                
+                # Build git log command with --grep for each line
+                git_cmd = ["git", "log", "--format=%H", "--all-match"] + [item for line in message_lines for item in ["--grep", line]]
+                
+                log_result = run_git_command_with_retry(git_cmd)
                 if not log_result.stdout.strip():
                     return f"Error: Could not find commit with hash {saved_hash} or message '{saved_message}'"
                 
