@@ -2,15 +2,19 @@
 from fastmcp import FastMCP
 import subprocess
 import time
-from typing import List, Tuple
-import gitrevise.odb as gitrevise_odb
-from gitrevise.utils import Repository, commit_range, edit_commit
+from typing import List, Tuple, Optional
+from pydantic import BaseModel
 
 # Create the MCP server
 mcp = FastMCP("git-mcp")
 
+class LastCommitInfo(BaseModel):
+    """Model for storing last commit information."""
+    hash: str
+    message: str
+
 # Store the last commit info in memory
-last_commit_info = None
+last_commit_info: Optional[LastCommitInfo] = None
 
 # Retry configuration
 MAX_RETRIES = 5
@@ -88,10 +92,10 @@ def git_commit(files: List[str], message: str) -> str:
         
         # Save the commit info
         global last_commit_info
-        last_commit_info = {
-            "hash": commit_hash,
-            "message": message
-        }
+        last_commit_info = LastCommitInfo(
+            hash=commit_hash,
+            message=message
+        )
         
         return f"Successfully committed {len(files)} file(s) (commit: {commit_hash}):\n{result.stdout}"
         
@@ -106,7 +110,7 @@ def fixup_commit(files: List[str]) -> str:
     """
     Amend files to the last commit created by git_commit.
     If the commit is still HEAD, uses git commit --amend.
-    Otherwise, uses gitrevise to edit the commit in history.
+    Otherwise, uses git commit --fixup to create a fixup commit.
     
     Args:
         files: List of file paths to add to the commit
@@ -120,8 +124,8 @@ def fixup_commit(files: List[str]) -> str:
         if not last_commit_info:
             return "Error: No previous commit found. Use git_commit first."
         
-        saved_hash = last_commit_info["hash"]
-        saved_message = last_commit_info["message"]
+        saved_hash = last_commit_info.hash
+        saved_message = last_commit_info.message
         
         # Get current HEAD hash
         head_result = run_git_command_with_retry(["git", "rev-parse", "HEAD"])
@@ -151,55 +155,14 @@ def fixup_commit(files: List[str]) -> str:
                 # Get the first matching commit
                 target_commit = log_result.stdout.strip().split()[0]
             
-            # Use gitrevise to edit the commit
-            repo = Repository()
+            # Create a fixup commit
+            result = run_git_command_with_retry(["git", "commit", "--fixup", target_commit])
             
-            # Get the commit to edit
-            target = repo.get_commit(target_commit)
-            
-            # Create a new tree with the staged changes
-            tree_result = run_git_command_with_retry(["git", "write-tree"])
-            new_tree_oid = tree_result.stdout.strip()
-            
-            # Create updated commit with new tree
-            new_commit = target.update(tree=repo.get_tree(new_tree_oid))
-            
-            # Get the range of commits to rebase
-            base_commit = f"{target_commit}~1"
-            try:
-                commits = list(commit_range(repo, base_commit, "HEAD"))
-            except:
-                # If the commit is the root commit
-                commits = list(commit_range(repo, target_commit, "HEAD"))
-                base_commit = None
-            
-            # Replace the target commit in the list
-            for i, commit in enumerate(commits):
-                if commit.oid.hex == target.oid.hex:
-                    commits[i] = new_commit
-                    break
-            
-            # Rebase the commits
-            if base_commit:
-                base = repo.get_commit(base_commit)
-            else:
-                base = None
-                
-            for commit in commits:
-                if base:
-                    commit = commit.rebase(base)
-                base = commit
-            
-            # Update the branch
-            run_git_command_with_retry(["git", "reset", "--hard", base.oid.hex])
-            
-            return f"Successfully edited commit {target_commit[:8]} with {len(files)} file(s) using gitrevise"
+            return f"Successfully created fixup commit for {target_commit[:8]} with {len(files)} file(s)"
             
     except subprocess.CalledProcessError as e:
         error_msg = e.stderr if e.stderr else str(e)
         return f"Git operation failed: {error_msg}"
-    except ImportError:
-        return "Error: gitrevise module not found. Install with: pip install gitrevise"
     except Exception as e:
         return f"Error: {str(e)}"
 
