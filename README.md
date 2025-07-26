@@ -18,13 +18,13 @@ provides a convenient way to fixup earlier commits.
 ### Using uv
 
 ```bash
-uv pip install mcp-git-training-wheels
+uvx mcp-git-training-wheels
 ```
 
 ### From source
 
 ```bash
-git clone https://github.com/yourusername/mcp-git-training-wheels
+git clone https://github.com/lava/mcp-git-training-wheels
 cd mcp-git-training-wheels
 uv pip install -e .
 ```
