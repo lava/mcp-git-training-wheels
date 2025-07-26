@@ -1,19 +1,16 @@
 #!/usr/bin/env python3
 from fastmcp import FastMCP
 import subprocess
-import os
-import json
 import time
 from typing import List, Tuple
-from pathlib import Path
 import gitrevise.odb as gitrevise_odb
 from gitrevise.utils import Repository, commit_range, edit_commit
 
 # Create the MCP server
 mcp = FastMCP("git-mcp")
 
-# File to store the last commit info
-LAST_COMMIT_FILE = Path.home() / ".git-mcp-last-commit.json"
+# Store the last commit info in memory
+last_commit_info = None
 
 # Retry configuration
 MAX_RETRIES = 5
@@ -90,12 +87,11 @@ def git_commit(files: List[str], message: str) -> str:
         commit_hash = commit_hash_result.stdout.strip()
         
         # Save the commit info
-        commit_info = {
+        global last_commit_info
+        last_commit_info = {
             "hash": commit_hash,
             "message": message
         }
-        with open(LAST_COMMIT_FILE, "w") as f:
-            json.dump(commit_info, f)
         
         return f"Successfully committed {len(files)} file(s) (commit: {commit_hash}):\n{result.stdout}"
         
@@ -120,14 +116,12 @@ def fixup_commit(files: List[str]) -> str:
     """
     try:
         # Check if we have a saved commit
-        if not LAST_COMMIT_FILE.exists():
+        global last_commit_info
+        if not last_commit_info:
             return "Error: No previous commit found. Use git_commit first."
         
-        with open(LAST_COMMIT_FILE, "r") as f:
-            commit_info = json.load(f)
-        
-        saved_hash = commit_info["hash"]
-        saved_message = commit_info["message"]
+        saved_hash = last_commit_info["hash"]
+        saved_message = last_commit_info["message"]
         
         # Get current HEAD hash
         head_result = run_git_command_with_retry(["git", "rev-parse", "HEAD"])
