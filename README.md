@@ -11,7 +11,8 @@ And no current model has the ability to un-fuck a git history.
 
 This MCP server gives the agent some training wheels for using git safely,. It
 ensures that only a specific named set of files can be committed, and also
-provides a convenient way to fixup earlier commits.
+provides a convenient way to fixup earlier commits. For best results, use
+permissions to automatically deny the use of `Bash(git commit:*)` or equivalent.
 
 It's still using the regular `git commit` command under the hood, so global
 and global git settings like username, email, and commit signing all apply
